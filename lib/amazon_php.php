@@ -215,6 +215,8 @@ class amazon_php{
 
         $this->categorys = $productCats;
         $this->tags = $productTags;
+        $this->reviews = $this->get_reviews($product_id);
+        $this->answers = $this->get_questions($product_id);
 
         return $results;
     }
