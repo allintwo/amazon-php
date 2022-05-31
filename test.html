@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+<style>
+
+
+   .xyxxx li ul {
+        background: orange;
+        visibility: hidden;
+        opacity: 0;
+        min-width: 5rem;
+        position: absolute;
+        transition: all 0.5s ease;
+        margin-top: 1rem;
+        left: 0;
+        display: none;
+    }
+
+    .xyxxx li:hover > ul,
+    .xyxxx li ul:hover {
+        visibility: visible;
+        opacity: 1;
+        display: block;
+    }
+
+    .xyxxx li ul li {
+        clear: both;
+        width: 100%;
+    }
+
+</style>
+
+
+<nav role="navigation" class="xyxxx">
+    <ul>
+        <li><a href="#">One</a></li>
+        <li><a href="#">Two</a>
+            <ul class="dropdown">
+                <li><a href="#">Sub-1</a></li>
+                <li><a href="#">Sub-2</a></li>
+                <li><a href="#">Sub-3</a></li>
+            </ul>
+        </li>
+        <li><a href="#">Three</a></li>
+    </ul>
+</nav>
+
+
+</body>
+</html>
