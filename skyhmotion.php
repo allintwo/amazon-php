@@ -41,6 +41,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 include_once 'wp/functions.php';
+include_once 'wp/post_build.php';
 include_once 'wp/cron.php';
 
 register_activation_hook( __FILE__, 'hamazon_function_to_run' );
@@ -177,6 +178,16 @@ sdkjfhsdlkujfgdsukifgsddifudsaui9d;
 
 
     // settings....
+
+    $template_info = <<<sdldhfdsiufgsdafgsdfgidsufgdsiu
+{TITLE}
+{PRODUCT_NAME}
+{QUESTIONS}
+{ANSWERS}
+{FACTS_TITLE}
+sdldhfdsiufgsdafgsdfgidsufgdsiu;
+
+
 
     $affiliate_id = '';
     $post_template = <<<sdfgdsiufgsduifgsdifgsdi
