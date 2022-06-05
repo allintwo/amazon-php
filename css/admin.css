@@ -1,0 +1,7 @@
+#toplevel_page_imga-setting .wp-menu-image {
+    background: url(../imgs/icon-white.png) no-repeat top left!important;
+    background-size: cover!important;
+}
+#toplevel_page_imga-setting .wp-menu-image:before{
+    display:none!important;
+}

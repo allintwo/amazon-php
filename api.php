@@ -16,8 +16,6 @@ $az = new amazon_product_data();
 if(isset($_REQUEST['amazon_id']))
 {
     $amazon_id = $_REQUEST['amazon_id'];
-
-
     $data = $az->get_product_info($amazon_id);
     $az->get_questions($amazon_id);
     $az->get_reviews($amazon_id);

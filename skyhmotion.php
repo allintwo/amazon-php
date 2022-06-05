@@ -81,6 +81,31 @@ sdfhdskfgdsafgfdsgafisdaigfdsufds;
 
 function show_hamazon_home()
 {
+    $post_template = <<<sdfgdsiufgsduifgsdifgsdi
+<!--  -->
+<!--  -->
+<!--  -->
+<!--  -->
+sdfgdsiufgsduifgsdifgsdi;
+
+
+    $post_test_output = '';
+    $hamazon_settings_data = [];
+    $option_name = 'hamazon_settings_data';
+    $option_value = get_option($option_name);
+    if($option_name)
+    {
+        $hamazon_settings_data = unserialize($option_value);
+    }else{
+        $hamazon_settings_data = [
+            'hamazon_affid' => 'test-20',
+            'hamazon_posttem' => $post_template,
+            'hamazon_demoti' => ''
+        ];
+        update_option($option_name, serialize($hamazon_settings_data));
+    }
+
+
     global $wpdb;
     $urls = '';
 
@@ -190,34 +215,66 @@ sdldhfdsiufgsdafgsdfgidsufgdsiu;
 
 
     $affiliate_id = '';
-    $post_template = <<<sdfgdsiufgsduifgsdifgsdi
-<!--  -->
-<!--  -->
-<!--  -->
-<!--  -->
-sdfgdsiufgsduifgsdifgsdi;
+
+
+    if(isset($_GET['ttx']))
+    {
+        include_once 'lib/simple_html_dom.php';
+        include_once 'lib/amazon_php.php';
+        $az = new amazon_product_data();
+        $amazon_id = 'B06XR5MWGM';
+        $data = $az->get_product_info($amazon_id);
+        $az->get_questions($amazon_id);
+        $az->get_reviews($amazon_id);
+        $product_response = $az->get_response();
+
+        $post_test_output = build_wp_post_template($product_response);
+
+    }
+
+    if(isset($_POST['hamazon_settings']))
+    {
+        $hamazon_settings_affid = $_POST['hamazon_affid'];
+        $hamazon_settings_posttem = $_POST['hamazon_posttem'];
+        $hamazon_settings_demoti = $_POST['hamazon_demoti'];
+
+        $hamazon_settings_data = [
+            'hamazon_affid' => $hamazon_settings_affid,
+            'hamazon_posttem' => $hamazon_settings_posttem,
+            'hamazon_demoti' => $hamazon_settings_demoti
+        ];
+
+        $option_name = 'hamazon_settings_data';
+        if (!get_option($option_name)) {
+            add_option($option_name, serialize($hamazon_settings_data));
+        }else{
+            update_option($option_name,serialize($hamazon_settings_data));
+        }
+
+    }
 
 
 
     $settings_html = <<<hdfakdgsddfgdsafldsf
 <div>
+
+
 <form action="" method="post">
 <div class="form-field form-required term-name-wrap">
 <label for="affid">Amazon Affiliate ID</label>
-<input type="text" name="affid" value="" placeholder="something-20" id="affid">
+<input type="text" name="hamazon_affid" value="{$hamazon_settings_data['hamazon_affid']}" placeholder="something-20" id="affid">
 </div>
 <div class="form-field form-required term-name-wrap">
 <label for="demotext">Demo title</label>
-<input type="text" name="demotext" placeholder="demo text" value="" id="demotext">
+<input type="text" name="hamazon_demoti" placeholder="demo text" value="{$hamazon_settings_data['hamazon_demoti']}" id="demotext">
 </div>
 <div class="form-field form-required term-name-wrap">
-<<label for="posttemplate">Post template</label>
-<textarea name="posttemplate" id="posttemplate">{$post_template}</textarea>
+<label for="posttemplate">Post template</label>
+<textarea name="hamazon_posttem" id="posttemplate">{$hamazon_settings_data['hamazon_posttem']}</textarea>
 </div>
 <div class="form-field form-required term-name-wrap">
-<input type="submit" name="savebtn" id="savebtn" value="save"  class="button button-primary">
+<input type="submit" name="hamazon_settings" id="savebtn" value="save"  class="button button-primary">
 </div>
-
 
 </form>
 
@@ -235,7 +292,7 @@ hdfakdgsddfgdsafldsf;
     $settings = h_html_container('Settings',$settings_html);
 
     echo <<<sdfdslfhdgdfhgord
-
+{$post_test_output}
 <div id="dashboard-widgets-wrap">
 <div id="dashboard-widgets" class="metabox-holder">
 	
