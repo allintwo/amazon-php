@@ -46,7 +46,7 @@ function hamazon_cron_function() {
         $product_response = $az->get_response();
         $post_test_output = build_wp_post_template($product_response);
       //  file_put_contents($_SERVER['DOCUMENT_ROOT'].'/cron.log',time().$post_test_output);
-      //  file_put_contents($_SERVER['DOCUMENT_ROOT'].'/wp/hamazon_res.json',json_encode($product_response));
+        file_put_contents($_SERVER['DOCUMENT_ROOT'].'/wp/hamazon_res.json',json_encode($product_response));
 
         if(isset($product_response['title']))
         {
