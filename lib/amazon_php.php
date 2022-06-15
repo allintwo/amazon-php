@@ -15,7 +15,9 @@ class amazon_php{
     public $id = '';
     public $image ='';
     public $images = [];
+    public $videos = [];
     public $rating = '';
+    public $rating_txt = '';
     public $rating_count = '';
     public $answers = [];
     public $answers_count = '';
@@ -31,6 +33,7 @@ class amazon_php{
 
 
 
+
     function get_product_info($product_id)
     {
 
@@ -42,7 +45,7 @@ class amazon_php{
         //$productData = file_get_contents( $amazon . $productLink );
       // $productData = $this->curlx( $productLink );
 
-        $debug = 1;
+        $debug = 0;
         $dfile = 'page.txt';
 
         if($debug)
@@ -55,6 +58,8 @@ class amazon_php{
                 $productData = $this->func_get_content( $productLink );
                 file_put_contents($dfile,$productData);
             }
+        }else{
+            $productData = $this->func_get_content( $productLink );
         }
 
        // echo $productData;exit;
@@ -69,6 +74,7 @@ class amazon_php{
 
         $rating = $xdom->find('span#acrPopover',0)->attr['title'];
         $this->rating = $rating;
+        $this->rating_txt = $rating;
         if(preg_match('#(\d\.\d) out of #',$rating,$mtc))
         {
             $this->rating = $mtc[1];
@@ -95,7 +101,17 @@ class amazon_php{
             $this->image = $image;
             $this->images = [$image];
         }
+        // images
+        if(preg_match_all('/"large":"(.*?)"/',$productData,$mtcs))
+        {
+            foreach ($mtcs[1] as $mtc)
+            {
+                $this->images[] = $mtc;
+            }
+        }
+        shuffle($this->images);
 
+       // print_r($this->images);return;
 
 
         // $productFeature = imga_get_match('/<div id=\"feature-bullets\" \b[^>]*>(\s+)<ul \b[^>]*>(.*)<\/ul>/isU', $productData, 2);
@@ -221,46 +237,79 @@ class amazon_php{
         $this->reviews = $this->get_reviews($product_id);
         $this->answers = $this->get_questions($product_id);
 
+
+        // videos
+        if(1)
+        {
+            $pattarn = '#data-video-url="([^"]+)"#';
+            if(preg_match_all($pattarn,$productData,$mtcs))
+            {
+                foreach ($mtcs[1] as $mtc)
+                {
+                    $this->videos[md5($mtc)] = $mtc;
+                }
+            }
+        }
+
+
         return $results;
     }
 
-    public function get_questions($product_id)
-    {
-        $url = "https://www.amazon.com/ask/questions/asin/{$product_id}/ref=cm_cd_dp_lla_ql_ll";
-        $webpage = $this->func_get_content($url);
-        $xdom = str_get_html($webpage);
 
-       // $quss = $xdom->find('div.askTeaserQuestions div.a-fixed-left-grid.a-spacing-base');
-        $quss = $xdom->find('div.a-section.askTeaserQuestions div.a-fixed-left-grid.a-spacing-base div.a-fixed-left-grid-inner div.a-fixed-left-grid-col.a-col-right');
+
+
+
+
+    public function get_questions($product_id,$question_limit = 15)
+    {
+        $each_page = 10;
 
         $ret_q = [];
-
-        foreach ($quss as $que)
+        for($i=1;$i<3;$i++)
         {
-            $a = $que->find('div.a-fixed-left-grid.a-spacing-base div.a-fixed-left-grid-inner div.a-fixed-left-grid-col.a-col-right span',0);
-            if(isset($a))
+           // $url = "https://www.amazon.com/ask/questions/asin/{$product_id}/ref=cm_cd_dp_lla_ql_ll";
+            $url = "https://www.amazon.com/ask/questions/asin/{$product_id}/{$i}/ref=ask_ql_psf_ql_hza";
+            $webpage = $this->func_get_content($url);
+            $xdom = str_get_html($webpage);
+
+            // $quss = $xdom->find('div.askTeaserQuestions div.a-fixed-left-grid.a-spacing-base');
+            $quss = $xdom->find('div.a-section.askTeaserQuestions div.a-fixed-left-grid.a-spacing-base div.a-fixed-left-grid-inner div.a-fixed-left-grid-col.a-col-right');
+
+
+
+            foreach ($quss as $que)
             {
-                $q = $que->find('a.a-link-normal span.a-declarative',0);
+                $a = $que->find('div.a-fixed-left-grid.a-spacing-base div.a-fixed-left-grid-inner div.a-fixed-left-grid-col.a-col-right span',0);
+                if(isset($a))
+                {
+                    $q = $que->find('a.a-link-normal span.a-declarative',0);
 
-                $ans = $a->plaintext;
-                $ans = trim($ans);
-                $ans = str_replace('                    see less','',$ans);
-                $ans = str_replace('                    see more                                ','',$ans);
+                    $ans = $a->plaintext;
+                    $ans = trim($ans);
+                    $ans = str_replace('                    see less','',$ans);
+                    $ans = str_replace('                    see more                                ','',$ans);
 
-                $q = trim($q->plaintext);
-                $qhsah = md5($q);
+                    $q = trim($q->plaintext);
+                    $qhsah = md5($q);
 
-                $ret_q[$qhsah] = [$q,$ans];
+                    $ret_q[$qhsah] = [$q,$ans];
 
-             //echo "<b>{$q->plaintext}</b><i>{$ans}</i><hr>";
+                    //echo "<b>{$q->plaintext}</b><i>{$ans}</i><hr>";
+                }
             }
 
-
         }
-        return $ret_q;
+
+
+
+        return  array_slice($ret_q,0,$question_limit);
 
     }
-    public function get_reviews($product_id)
+
+
+
+
+    public function get_reviews($product_id,$reviews_limit = 10)
     {
         $url = "https://www.amazon.com/545/product-reviews/{$product_id}/ref=cm_cr_dp_d_show_all_btm?ie=UTF8&reviewerType=all_reviews";
         $url = "https://www.amazon.com/HyperX-Alloy-Origins-Software-Controlled-Customization/product-reviews/{$product_id}/ref=cm_cr_getr_d_paging_btm_2?ie=UTF8&filterByStar=positive&pageNumber=1&reviewerType=all_reviews&pageSize=10";
@@ -446,12 +495,14 @@ class amazon_product_data extends amazon_php {
     function get_response()
     {
 
-        return [
+        $retval = [
             'id' => $this->id,
             'title'=>$this->title,
             'image' => $this->image,
             'images' => $this->images,
+            'videos' => $this->videos,
             'rating' => $this->rating,
+            'rating_txt' => $this->rating_txt,
             'rating_count' => $this->rating_count,
             'answers' => $this->answers,
             'answers_count' => $this->answers_count,
@@ -465,6 +516,7 @@ class amazon_product_data extends amazon_php {
         ];
 
 
+        return $retval;
 
     }
 

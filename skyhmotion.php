@@ -39,16 +39,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ** @author -fulldev CosMos
  **/
 
+define( 'HAMAZON_DIR_URL', plugin_dir_url(__FILE__) );
+define( 'HAMAZON_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'HAMAZON_VERSION', '0.01' );
+
+
 
 include_once 'wp/functions.php';
 include_once 'wp/post_build.php';
-include_once 'wp/cron.php';
 
-register_activation_hook( __FILE__, 'hamazon_function_to_run' );
+include_once 'wp/footer-script.php';
 
-function hamazon_function_to_run(){
-    include_once 'wp/install.php';
-}
+
 
 
 
@@ -58,6 +60,12 @@ function register_my_custom_menu_page() {
     add_menu_page( 'Hamazon', 'Hamazon', 'manage_options', 'hamazon-home', 'show_hamazon_home', 'dashicons-welcome-widgets-menus', 90 );
   //  add_menu_page( 'Hamazon', 'Hamazon', 'manage_options', 'hamazon-settings', 'show_hamazon_settings', 'dashicons-welcome-widgets-menus', 90 );
 }
+
+add_action('wp_enqueue_scripts', 'hamazon_wp_enqueue');
+function hamazon_wp_enqueue(){
+    wp_enqueue_style( 'imga-style', HAMAZON_DIR_URL.'css/style.css', array(), HAMAZON_VERSION );
+}
+
 
 
 function h_html_container($title,$bodytext)
@@ -82,10 +90,7 @@ sdfhdskfgdsafgfdsgafisdaigfdsufds;
 function show_hamazon_home()
 {
     $post_template = <<<sdfgdsiufgsduifgsdifgsdi
-<!--  -->
-<!--  -->
-<!--  -->
-<!--  -->
+<strong><u><h2><!--KEYWORD--> Buying Guide</h2></u></strong></br></ol>Top <!--KEYWORD--> brands try to offer some unique features that make them stand out in the crowd. Thus hopefully, you’ll find one ideal product or another in our list.</br></br><ol start="2"> 	<li><strong><u> Features:</u></strong> You don’t need heaps of features, but useful ones. We look at the features that matter and choose the top <!--KEYWORD--> based on that.</li> 	<li><strong><u> Specifications:</u></strong> Numbers always help you measure the quality of a product in a quantitative way. We try to find products of higher specifications, but with the right balance.</li> 	<li><strong><u> Customer Ratings:</u></strong> The hundreds of customers using the <!--KEYWORD--> before you won’t say wrong, would they? Better ratings mean better service experienced by a good number of people.</li> 	<li><strong><u> Customer Reviews:</u></strong> Like ratings, customer reviews give you actual and trustworthy information, coming from real-world consumers about the <!--KEYWORD--> they used.</li> 	<li><strong><u> Seller Rank:</u></strong> Now, this is interesting! You don’t just need a good <!--KEYWORD-->, you need a product that is trendy and growing in sales. It serves two objectives. Firstly, the growing number of users indicates the product is good. Secondly, the manufacturers will hopefully provide better quality and after-sales service because of that growing number.</li> 	<li><strong><u> Value For The Money:</u></strong> They say you get what you pay for. Cheap isn’t always good. But that doesn’t mean splashing tons of money on a flashy but underserving product is good either. We try to measure how much value for the money you can get from your <!--KEYWORD--> before putting them on the list.</li> 	<li><strong><u> Durability:</u></strong> Durability and reliability go hand to hand. A robust and durable <!--KEYWORD--> will serve you for months and years to come.</li> 	<li><strong><u> Availability:</u></strong> Products come and go, new products take the place of the old ones. Probably some new features were added, some necessary modifications were done. What’s the point of using a supposedly good <!--KEYWORD--> if that’s no longer continued by the manufacturer? We try to feature products that are up-to-date and sold by at least one reliable seller, if not several.</li> 	<li><strong><u> Negative Ratings: </u></strong>Yes, we take that into consideration too! When we pick the top rated <!--KEYWORD--> on the market, the products that got mostly negative ratings get filtered and discarded.</li></ol>These are the criteria we have chosen our <!--KEYWORD--> on. Does our process stop there? Heck, no! The most important thing that you should know about us is, we\'re always updating our website to provide timely and relevant information.</br></br>Since reader satisfaction is our utmost priority, we have a final layer of filtration. And that is you, the reader! If you find any <!--KEYWORD--> featured here Incorrect, irrelevant, not up to the mark, or simply outdated, please let us know. Your feedback is always welcome and we’ll try to promptly correct our list as per your reasonable suggestion.
 sdfgdsiufgsduifgsdifgsdi;
 
 
@@ -227,7 +232,9 @@ sdldhfdsiufgsdafgsdfgidsufgdsiu;
         $az->get_questions($amazon_id);
         $az->get_reviews($amazon_id);
         $product_response = $az->get_response();
+        file_put_contents($_SERVER['DOCUMENT_ROOT'].'/wp/hamazon_res.json',json_encode($product_response));
 
+        //echo json_encode($product_response);
         $post_test_output = build_wp_post_template($product_response);
 
     }
@@ -235,8 +242,8 @@ sdldhfdsiufgsdafgsdfgidsufgdsiu;
     if(isset($_POST['hamazon_settings']))
     {
         $hamazon_settings_affid = $_POST['hamazon_affid'];
-        $hamazon_settings_posttem = $_POST['hamazon_posttem'];
-        $hamazon_settings_demoti = $_POST['hamazon_demoti'];
+        $hamazon_settings_posttem = stripslashes($_POST['hamazon_posttem']);
+        $hamazon_settings_demoti = stripslashes($_POST['hamazon_demoti']);
 
         $hamazon_settings_data = [
             'hamazon_affid' => $hamazon_settings_affid,
@@ -248,10 +255,23 @@ sdldhfdsiufgsdafgsdfgidsufgdsiu;
         if (!get_option($option_name)) {
             add_option($option_name, serialize($hamazon_settings_data));
         }else{
-            update_option($option_name,serialize($hamazon_settings_data));
+
+            update_option($option_name,  serialize($hamazon_settings_data));
         }
 
     }
+
+
+    $tpl_inf_html = <<<dfgiudfghuisdgaiufasd
+<!--KEYWORD-->  = Last Tag name
+<!--TITLE--> = Amazon title  
+<!--RATING--> = rating score 5/5
+dfgiudfghuisdgaiufasd;
+
+    $tpl_inf_html = htmlentities($tpl_inf_html);
+
+
+    $post_tem_enc = $hamazon_settings_data['hamazon_posttem'];
 
 
 
@@ -269,8 +289,8 @@ sdldhfdsiufgsdafgsdfgidsufgdsiu;
 <input type="text" name="hamazon_demoti" placeholder="demo text" value="{$hamazon_settings_data['hamazon_demoti']}" id="demotext">
 </div>
 <div class="form-field form-required term-name-wrap">
-<label for="posttemplate">Post template</label>
-<textarea name="hamazon_posttem" id="posttemplate">{$hamazon_settings_data['hamazon_posttem']}</textarea>
+<label for="posttemplate">Post conclusion</label>
+<textarea name="hamazon_posttem" id="posttemplate">{$post_tem_enc}</textarea>
 </div>
 <div class="form-field form-required term-name-wrap">
 <input type="submit" name="hamazon_settings" id="savebtn" value="save"  class="button button-primary">
@@ -278,7 +298,9 @@ sdldhfdsiufgsdafgsdfgidsufgdsiu;
 
 </form>
 
-
+<div>
+<p><i>{$tpl_inf_html}</i></p>
+</div>
 </div>
 hdfakdgsddfgdsafldsf;
 
@@ -323,4 +345,13 @@ hdfakdgsddfgdsafldsf;
 sdfdslfhdgdfhgord;
 
 }
+
+register_activation_hook( __FILE__, 'hamazon_function_to_run' );
+
+function hamazon_function_to_run(){
+    include_once 'wp/install.php';
+    fapello_create_extra_table();
+}
+
+include_once 'wp/cron.php';
 
